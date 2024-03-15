@@ -23,7 +23,7 @@ public class Sudoku {
         constraintsArray = constraints.toArray(constraintsArray);
 
         // Use solver
-        Solver solver = new Solver(variablesArray, constraintsArray);
+        Solver solver = new Solver(variablesArray, constraintsArray, 0);
         int[] result = solver.findOneSolution();
 
         // TODO: use result to construct answer

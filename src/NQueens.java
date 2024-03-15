@@ -20,7 +20,7 @@ public class NQueens {
         constraintsArray = constraints.toArray(constraintsArray);
 
         // Use solver
-        Solver solver = new Solver(variablesArray, constraintsArray);
+        Solver solver = new Solver(variablesArray, constraintsArray, 0);
         List<int[]> result = solver.findAllSolutions();
 
         // TODO: use result to construct answer
