@@ -195,5 +195,23 @@ class Solver {
         }
     }
 
+    static class NonDecreasingConstraint extends Constraint {
+        @Override
+        boolean check(int[] currentSolution) {
+            for (int i = 0; i < currentSolution.length - 1; i++) {
+                if (currentSolution[i] > currentSolution[i + 1]) {
+                    return false; // 如果当前元素大于下一个元素，则不是非递减的
+                }
+            }
+            return true; // 所有元素都是非递减的
+        }
+
+        @Override
+        void infer() {
+            // 此方法可以用于基于当前解的部分信息推导出其他变量的值，但在这个简单的约束中不需要实现
+        }
+    }
+
+
 
 }

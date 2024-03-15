@@ -95,27 +95,29 @@ public class StandardCombinatorics {
      * Returns a list of all combinations of k elements from the set {1,...,n} with repetitions
      */
     public static List<int[]> getCombinationsWithRepetition(int n, int k) {
-        // Initialize lists for variables and constraints
         List<Solver.Variable> variables = new ArrayList<>();
-        List<Solver.Constraint> constraints = new ArrayList<>();
+        // 初始化每个变量，其域为从1到n的整数
+        for (int i = 0; i < k; i++) {
+            List<Integer> domain = new ArrayList<>();
+            for (int j = 1; j <= n; j++) {
+                domain.add(j);
+            }
+            variables.add(new Solver.Variable(domain));
+        }
 
-        // TODO: add your variables
+        // 添加非递减的约束
+        Solver.Constraint nonDecreasingConstraint = new Solver.NonDecreasingConstraint();
+        Solver.Constraint[] constraintsArray = {nonDecreasingConstraint};
 
-        // TODO: add your constraints
-
-        // Convert to arrays
-        Solver.Variable[] variablesArray = new Solver.Variable[variables.size()];
-        variablesArray = variables.toArray(variablesArray);
-        Solver.Constraint[] constraintsArray = new Solver.Constraint[constraints.size()];
-        constraintsArray = constraints.toArray(constraintsArray);
-
-        // Use solver
-        Solver solver = new Solver(variablesArray, constraintsArray, 0);
+        // 创建Solver实例并找到所有解
+        Solver solver = new Solver(variables.toArray(new Solver.Variable[0]), constraintsArray, 0);
         List<int[]> result = solver.findAllSolutions();
 
-        // TODO: use result to construct answer
-        return new ArrayList<>();
+        return result;
     }
+
+
+
 
     /**
      * Returns a list of all subsets in the set {1,...,n}
