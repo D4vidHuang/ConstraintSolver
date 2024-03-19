@@ -9,8 +9,14 @@ public class NQueens {
         List<Solver.Variable> variables = new ArrayList<>();
         List<Solver.Constraint> constraints = new ArrayList<>();
 
-        // TODO: add your variables
-
+        // Variable
+        Integer[] domain = new Integer[n];
+        for (int i = 0; i < n; i++) {
+            domain[i] = i + 1;
+        }
+        for (int i = 0; i < n; i++) {
+          variables.add(new Solver.Variable(Arrays.asList(domain)));
+        }
         // TODO: add your constraints
 
         // Convert to arrays
