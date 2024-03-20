@@ -23,8 +23,9 @@ public class Sudoku {
         constraintsArray = constraints.toArray(constraintsArray);
 
         // Use solver
-        Solver solver = new Solver(variablesArray, constraintsArray, 0);
-        int[] result = solver.findOneSolution();
+//        Solver solver = new Solver(variablesArray, constraintsArray, 0);
+        Solver solver = new Solver(variablesArray, constraintsArray);
+        int[] result = solver.findOneSolution(-1,-1);
 
         // TODO: use result to construct answer
         return grid;

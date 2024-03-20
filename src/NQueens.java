@@ -9,16 +9,16 @@ public class NQueens {
         List<Solver.Variable> variables = new ArrayList<>();
         List<Solver.Constraint> constraints = new ArrayList<>();
 
-        // Variable
+        // TODO: add your variables
         Integer[] domain = new Integer[n];
         for (int i = 0; i < n; i++) {
-            domain[i] = i + 1;
+            domain[i] = i;
         }
         for (int i = 0; i < n; i++) {
-          variables.add(new Solver.Variable(Arrays.asList(domain)));
+            variables.add(new Solver.Variable(Arrays.asList(domain)));
         }
         // TODO: add your constraints
-
+        constraints.add(new Solver.NQueenConstraint()); // Add N-Queen specific constraint
         // Convert to arrays
         Solver.Variable[] variablesArray = new Solver.Variable[variables.size()];
         variablesArray = variables.toArray(variablesArray);
@@ -26,10 +26,10 @@ public class NQueens {
         constraintsArray = constraints.toArray(constraintsArray);
 
         // Use solver
-        Solver solver = new Solver(variablesArray, constraintsArray, 0);
-        List<int[]> result = solver.findAllSolutions();
+        Solver solver = new Solver(variablesArray, constraintsArray);
+        List<int[]> result = solver.findAllSolutions(n, -1);
 
         // TODO: use result to construct answer
-        return -1;
+        return result.size();
     }
 }

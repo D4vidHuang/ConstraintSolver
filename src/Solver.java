@@ -5,141 +5,203 @@ class Solver {
         List<Integer> domain;
         // you can add more attributes
 
+        /**
+         * Constructs a new variable.
+         * @param domain A list of values that the variable can take
+         */
         public Variable(List<Integer> domain) {
             this.domain = domain;
         }
     }
 
     static abstract class Constraint {
-        abstract boolean check(int[] currentSolution);
+        /**
+         * Tries to reduce the domain of the variables associated to this constraint, using inference
+         */
+        abstract void infer(int[] currentSolution, int index, int n, Variable var);
+    }
 
-        abstract void infer();
+    static class NQueenConstraint extends Constraint{
+        // current solution [q1, q2 ... qn]
+        // No need to check column since we have n-size array for n column
+        // Constraint qi = qj only if i != j to ensure no 2 queen are at same row
+        // Constraint |i - j| != |qi - qj| to ensure no 2 queen on same diagonal
+        @Override
+        void infer(int[] currentSolution, int index, int n, Variable var) {
+            HashSet<Integer> occ = new HashSet<>();
+
+            for (int i = 0; i < index; i++) {
+                // Row constraint
+                occ.add(currentSolution[i]);
+                // Diagonal constraint
+                int diff = Math.abs(i - index);
+                int d1 = currentSolution[i] + diff;
+                int d2 = currentSolution[i] - diff;
+                if (d1 >= 0 && d1 < n) occ.add(d1);
+                if (d2 >= 0 && d2 < n) occ.add(d2);
+            }
+
+            ArrayList<Integer> newDomain = new ArrayList<>();
+
+            for (int i = 0; i < n; i++) {
+                if (occ.contains(i)) continue;
+                newDomain.add(i);
+            }
+
+            var.domain = newDomain;
+        }
+    }
+
+//    static class SubSetConstraint extends Constraint {
+//
+//        @Override
+//        void infer(int[] currentSolution, int index, int n, Variable var) {
+//
+//        }
+//    }
+
+    static class WithOutRepConstraint extends Constraint {
+
+        @Override
+        void infer(int[] currentSolution, int index, int n, Variable var) {
+            HashSet<Integer> occ = new HashSet<>();
+            int max = -1;
+            for (int i = 0; i < index; i++) {
+                if (currentSolution[i] > max) max = currentSolution[i];
+                occ.add(currentSolution[i]);
+            }
+            ArrayList<Integer> newDomain = new ArrayList<>();
+            for (int i = 1; i <= n; i++) {
+                if (occ.contains(i) || i <= max) continue;
+                newDomain.add(i);
+            }
+            var.domain = newDomain;
+        }
+    }
+
+    static class WithRepConstraint extends Constraint {
+
+        @Override
+        void infer(int[] currentSolution, int index, int n, Variable var) {
+            int max = -1;
+            for (int i = 0; i < index; i++) {
+                if (currentSolution[i] > max) max = currentSolution[i];
+            }
+            ArrayList<Integer> newDomain = new ArrayList<>();
+            for (int i = 1; i <= n; i++) {
+                if (i < max) continue;
+                newDomain.add(i);
+            }
+            var.domain = newDomain;
+        }
+    }
+
+    static class PermutationConstraint extends Constraint {
+
+        @Override
+        void infer(int[] currentSolution, int index, int n, Variable var) {
+            HashSet<Integer> occ = new HashSet<>();
+            for (int i = 0; i < index; i++) {
+                occ.add(currentSolution[i]);
+            }
+            ArrayList<Integer> newDomain = new ArrayList<>();
+            for (int i = 1; i <= n; i++) {
+                if (occ.contains(i)) continue;
+                newDomain.add(i);
+            }
+            var.domain = newDomain;
+        }
+    }
+
+    // Example implementation of the Constraint interface.
+    // It enforces that for given variable X, it holds that 5 < X < 10.
+    //
+    // This particular constraint will most likely not be very useful to you...
+    // Remove it and design a few constraints that *can* help you!
+    static abstract class BetweenFiveAndTenConstraint {
+        Variable var;
+
+        public BetweenFiveAndTenConstraint(Variable var) {
+            this.var = var;
+        }
+
+        void infer() {
+            List<Integer> newDomain = new LinkedList<>();
+
+            for (Integer x : this.var.domain) {
+                if (5 < x && x < 10)
+                    newDomain.add(x);
+            }
+
+            this.var.domain = newDomain;
+        }
     }
 
     Variable[] variables;
     Constraint[] constraints;
     List<int[]> solutions;
-    int k;
+    // you can add more attributes
 
-    public Solver(Variable[] variables, Constraint[] constraints, int k) {
+    /**
+     * Constructs a solver.
+     * @param variables The variables in the problem
+     * @param constraints The constraints applied to the variables
+     */
+    public Solver(Variable[] variables, Constraint[] constraints) {
         this.variables = variables;
         this.constraints = constraints;
-        this.solutions = new LinkedList<>();
-        this.k = k;
+
+        solutions = new ArrayList<>();
     }
 
-    int[] findOneSolution() {
-        solve(false);
+    /**
+     * Searches for one solution that satisfies the constraints.
+     * @return The solution if it exists, else null
+     */
+    int[] findOneSolution(int n, int k) {
+        solve(false, n , k);
+
         return !solutions.isEmpty() ? solutions.get(0) : null;
     }
 
-    List<int[]> findAllSolutions() {
-        solve(true);
+    /**
+     * Searches for all solutions that satisfy the constraints.
+     * @return The solution if it exists, else null
+     */
+    List<int[]> findAllSolutions(int n, int k) {
+        solve(true, n, k);
+
         return solutions;
     }
 
-    void solve(boolean findAllSolutions) {
-        // Initialize an empty current solution list
-        int[] currentSolution = new int[variables.length];
-        // Start the recursive search with an empty solution
-        backtrack(0, currentSolution, 0, findAllSolutions);
+    /**
+     * Main method for solving the problem.
+     * @param findAllSolutions Whether the solver should return just one solution, or all solutions
+     */
+    void solve(boolean findAllSolutions, int n, int k) {
+        // here you can do any preprocessing you might want to do before diving into the search
+        int[] curSolution = new int[variables.length];
+
+        search(findAllSolutions, curSolution, 0, n , k);
     }
 
-    void backtrack(int currentIndex, int[] currentSolution, int selectedCount, boolean findAllSolutions) {
-        if (currentIndex == variables.length) {
-            if (constraints.length == 0 || checkConstraints(currentSolution)) {
-                solutions.add(Arrays.copyOf(currentSolution, currentSolution.length));
-                if (!findAllSolutions) return;
-            }
+    /**
+     * Solves the problem using search and inference.
+     */
+    void search(boolean findAllSolutions, int[] currentSolution, int index, int n, int k) {
+        if (index == variables.length) {
+            solutions.add(currentSolution.clone());
+            if (!findAllSolutions) return;
+//            solutions.add(currentSolution);
         } else {
-            for (Integer value : variables[currentIndex].domain) {
-                currentSolution[currentIndex] = value;
-//                if (constraints.length > 0 && !checkConstraints(currentSolution)) continue;
-                if (k == 0 || (selectedCount + value <= k && (variables.length - currentIndex + selectedCount) >= k)) {
-                    backtrack(currentIndex + 1, currentSolution, selectedCount + value, findAllSolutions);
-                }
+            // Reduce the domain
+            for (Constraint c : constraints) c.infer(currentSolution, index, n, variables[index]);
+            if (variables[index].domain.isEmpty()) return;
+            for (Integer cur : variables[index].domain) {
+                currentSolution[index] = cur;
+                search(findAllSolutions, currentSolution, index + 1, n, k);
             }
         }
+
     }
-
-
-
-
-    boolean checkConstraints(int[] currentSolution) {
-        for (Constraint constraint : constraints) {
-            if (!constraint.check(currentSolution)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    static class ExactlyKConstraint extends Constraint {
-        int k;
-
-        public ExactlyKConstraint(int k) {
-            this.k = k;
-        }
-
-        @Override
-        boolean check(int[] currentSolution) {
-            int count = 0;
-            for (int value : currentSolution) {
-                if (value == 1) count++;
-            }
-            return count == k;
-        }
-
-        @Override
-        void infer() {
-
-        }
-    }
-
-    static class NonDecreasingConstraint extends Constraint {
-        @Override
-        boolean check(int[] currentSolution) {
-            for (int i = 0; i < currentSolution.length - 1; i++) {
-                if (currentSolution[i] > currentSolution[i + 1]) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        @Override
-        void infer() {
-
-        }
-    }
-
-    static class UniqueConstraint extends Constraint {
-        @Override
-        boolean check(int[] currentSolution) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("{ ");
-            for (int i = 0; i < currentSolution.length; i++) {
-                sb.append(currentSolution[i] + ", ");
-            }
-            System.out.println(sb);
-            Set<Integer> seen = new HashSet<>();
-            for (int value : currentSolution) {
-                if (seen.contains(value) && value != 0) {
-                    System.out.println("false");
-                    return false;
-                }
-                seen.add(value);
-            }
-            return true;
-        }
-
-        @Override
-        void infer() {
-
-        }
-    }
-
-
-
-
 }
