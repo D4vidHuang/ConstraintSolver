@@ -23,7 +23,8 @@ public class StandardCombinatorics {
 
         // Use solver
         Solver solver = new Solver(variablesArray, constraintsArray);
-        List<int[]> result = solver.findAllSolutions(n, -1);
+        int[] curSolution = new int[variablesArray.length];
+        List<int[]> result = solver.findAllSolutions(n, -1, curSolution);
         ArrayList<String> res = new ArrayList<>();
         for (int[] arr : result) {
             StringBuilder sb = new StringBuilder();
@@ -63,7 +64,8 @@ public class StandardCombinatorics {
 
         // Use solver
         Solver solver = new Solver(variablesArray, constraintsArray);
-        List<int[]> result = solver.findAllSolutions(n, k);
+        int[] curSolution = new int[variablesArray.length];
+        List<int[]> result = solver.findAllSolutions(n, k, curSolution);
 //        for (int[] arr : result) {
 //            StringBuilder sb = new StringBuilder();
 //            sb.append("{ ");
@@ -105,7 +107,8 @@ public class StandardCombinatorics {
 
         // Use solver
         Solver solver = new Solver(variablesArray, constraintsArray);
-        List<int[]> result = solver.findAllSolutions(n, k);
+        int[] curSolution = new int[variablesArray.length];
+        List<int[]> result = solver.findAllSolutions(n, k, curSolution);
 
         // TODO: use result to construct answer
         return result;
@@ -133,7 +136,8 @@ public class StandardCombinatorics {
 
         // Use solver
         Solver solver = new Solver(variablesArray, constraintsArray);
-        List<int[]> result = solver.findAllSolutions(n, -1);
+        int[] curSolution = new int[variablesArray.length];
+        List<int[]> result = solver.findAllSolutions(n, -1, curSolution);
         List<int[]> mapped = new ArrayList<>();
         for (int i = 0; i < result.size(); i++) {
             ArrayList<Integer> cur = new ArrayList<>();
@@ -176,9 +180,10 @@ public class StandardCombinatorics {
 
         // Use solver
         Solver solver = new Solver(variablesArray, constraintsArray);
-        List<int[]> result = solver.findAllSolutions(n, -1);
+        int[] curSolution = new int[variablesArray.length];
+        List<int[]> result = solver.findAllSolutions(n, -1, curSolution);
 
-        // TODO: use result to construct answer
+
         return result;
     }
 }

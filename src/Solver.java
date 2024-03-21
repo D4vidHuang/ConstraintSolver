@@ -102,7 +102,7 @@ class Solver {
         void infer(int[] currentSolution, int index, int n, Variable var) {
             HashSet<Integer> occ = new HashSet<>();
             for (int i = 0; i < index; i++) {
-                occ.add(currentSolution[i]);
+               occ.add(currentSolution[i]);
             }
             ArrayList<Integer> newDomain = new ArrayList<>();
             for (int i = 1; i <= n; i++) {
@@ -110,6 +110,75 @@ class Solver {
                 newDomain.add(i);
             }
             var.domain = newDomain;
+        }
+    }
+
+    static class RowConstraint extends Constraint {
+        @Override
+        void infer(int[] currentSolution, int index, int n, Variable var) {
+            HashSet<Integer> occ = new HashSet<>();
+            int rowStartIndex = index / n * n;
+            for (int i = 0; i < n; i++) {
+                int curIndex = rowStartIndex + i;
+                if (currentSolution[curIndex] >= 1) occ.add(currentSolution[curIndex]);
+            }
+            ArrayList<Integer> newDomain = new ArrayList<>();
+            for (int i = 1; i <= n; i++) {
+                if (occ.contains(i)) continue;
+                newDomain.add(i);
+            }
+            var.domain = newDomain;
+        }
+    }
+
+    static class ColumnConstraint extends Constraint {
+        @Override
+        void infer(int[] currentSolution, int index, int n, Variable var) {
+            HashSet<Integer> occ = new HashSet<>();
+            int columnStartIndex = index % n;
+            for (int i = 0; columnStartIndex + i < currentSolution.length; i+=9) {
+                int curIndex = columnStartIndex + i;
+                if (currentSolution[curIndex] >= 1) occ.add(currentSolution[curIndex]);
+            }
+//            ArrayList<Integer> newDomain = new ArrayList<>();
+//            for (Integer i : var.domain) {
+//                if (occ.contains(i)) continue;
+//                newDomain.add(i);
+//            }
+            var.domain.removeAll(occ);
+//            ArrayList<Integer> newDomain = new ArrayList<>();
+//            for (int i = 1; i <= n; i++) {
+//                if (occ.contains(i)) continue;
+//                newDomain.add(i);
+//            }
+//
+//            var.domain = newDomain;
+        }
+    }
+
+    static class CellConstraint extends Constraint {
+        @Override
+        void infer(int[] currentSolution, int index, int n, Variable var) {
+            HashSet<Integer> occ = new HashSet<>();
+            int columnStartIndex = index % n;
+            int rowStartIndex = index / n * n;
+            int cellStartIndex = columnStartIndex / 3 * 3;
+            cellStartIndex = rowStartIndex * 9 + cellStartIndex;
+            for (int i = 0; i < 3; i++) {
+                int curIndex = cellStartIndex + i;
+                for (int j = 0; j < 3; j++) {
+                    int tmp = curIndex + j * 9;
+                    occ.add(currentSolution[tmp]);
+                }
+            }
+            var.domain.removeAll(occ);
+//            ArrayList<Integer> newDomain = new ArrayList<>();
+//            for (int i = 1; i <= n; i++) {
+//                if (occ.contains(i)) continue;
+//                newDomain.add(i);
+//            }
+//
+//            var.domain = newDomain;
         }
     }
 
@@ -158,8 +227,8 @@ class Solver {
      * Searches for one solution that satisfies the constraints.
      * @return The solution if it exists, else null
      */
-    int[] findOneSolution(int n, int k) {
-        solve(false, n , k);
+    int[] findOneSolution(int n, int k, int[] currentSolution) {
+        solve(false, n , k, currentSolution);
 
         return !solutions.isEmpty() ? solutions.get(0) : null;
     }
@@ -168,8 +237,8 @@ class Solver {
      * Searches for all solutions that satisfy the constraints.
      * @return The solution if it exists, else null
      */
-    List<int[]> findAllSolutions(int n, int k) {
-        solve(true, n, k);
+    List<int[]> findAllSolutions(int n, int k, int[] currentSolution) {
+        solve(true, n, k, currentSolution);
 
         return solutions;
     }
@@ -178,11 +247,9 @@ class Solver {
      * Main method for solving the problem.
      * @param findAllSolutions Whether the solver should return just one solution, or all solutions
      */
-    void solve(boolean findAllSolutions, int n, int k) {
+    void solve(boolean findAllSolutions, int n, int k, int[] currentSolution) {
         // here you can do any preprocessing you might want to do before diving into the search
-        int[] curSolution = new int[variables.length];
-
-        search(findAllSolutions, curSolution, 0, n , k);
+        search(findAllSolutions, currentSolution, 0, n , k);
     }
 
     /**
@@ -193,9 +260,13 @@ class Solver {
             solutions.add(currentSolution.clone());
             if (!findAllSolutions) return;
 //            solutions.add(currentSolution);
-        } else {
+        } else if (currentSolution[index] >= 0){
             // Reduce the domain
-            for (Constraint c : constraints) c.infer(currentSolution, index, n, variables[index]);
+
+            for (Constraint c : constraints) {
+                // If we need to assign to current cell
+                c.infer(currentSolution, index, n, variables[index]);
+            }
             if (variables[index].domain.isEmpty()) return;
             for (Integer cur : variables[index].domain) {
                 currentSolution[index] = cur;
