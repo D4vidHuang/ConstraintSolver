@@ -28,6 +28,7 @@ public class NQueens {
         // Use solver
         Solver solver = new Solver(variablesArray, constraintsArray);
         int[] curSolution = new int[variablesArray.length];
+        Arrays.fill(curSolution, -1);
         List<int[]> result = solver.findAllSolutions(n, -1, curSolution);
 
         // TODO: use result to construct answer

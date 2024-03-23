@@ -39,11 +39,11 @@ public class Sudoku {
 //        Solver solver = new Solver(variablesArray, constraintsArray, 0);
         Solver solver = new Solver(variablesArray, constraintsArray);
 
-
-        int[] result = solver.findOneSolution(9,-1, curSolution);
+        // Because the sudoku has non-fixed size, pass the size of the grid as the first argument
+        int[] result = solver.findOneSolution(grid.length,-1, curSolution);
 
         for (int i = 0; i < result.length; i++) {
-            grid[i / 9][i % 9] = result[i];
+            grid[i / grid.length][i % grid.length] = result[i];
         }
         return grid;
     }

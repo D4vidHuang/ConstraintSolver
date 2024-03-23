@@ -24,6 +24,7 @@ public class StandardCombinatorics {
         // Use solver
         Solver solver = new Solver(variablesArray, constraintsArray);
         int[] curSolution = new int[variablesArray.length];
+        Arrays.fill(curSolution, -1);
         List<int[]> result = solver.findAllSolutions(n, -1, curSolution);
         ArrayList<String> res = new ArrayList<>();
         for (int[] arr : result) {
@@ -65,7 +66,9 @@ public class StandardCombinatorics {
         // Use solver
         Solver solver = new Solver(variablesArray, constraintsArray);
         int[] curSolution = new int[variablesArray.length];
+        Arrays.fill(curSolution, -1);
         List<int[]> result = solver.findAllSolutions(n, k, curSolution);
+//        // Debug Print
 //        for (int[] arr : result) {
 //            StringBuilder sb = new StringBuilder();
 //            sb.append("{ ");
@@ -75,7 +78,6 @@ public class StandardCombinatorics {
 //            sb.append("} ");
 //            System.out.println(sb);
 //        }
-        // TODO: use result to construct answer
         return result;
     }
 
@@ -108,6 +110,7 @@ public class StandardCombinatorics {
         // Use solver
         Solver solver = new Solver(variablesArray, constraintsArray);
         int[] curSolution = new int[variablesArray.length];
+        Arrays.fill(curSolution, -1);
         List<int[]> result = solver.findAllSolutions(n, k, curSolution);
 
         // TODO: use result to construct answer
@@ -137,6 +140,7 @@ public class StandardCombinatorics {
         // Use solver
         Solver solver = new Solver(variablesArray, constraintsArray);
         int[] curSolution = new int[variablesArray.length];
+        Arrays.fill(curSolution, -1);
         List<int[]> result = solver.findAllSolutions(n, -1, curSolution);
         List<int[]> mapped = new ArrayList<>();
         for (int i = 0; i < result.size(); i++) {
@@ -181,6 +185,7 @@ public class StandardCombinatorics {
         // Use solver
         Solver solver = new Solver(variablesArray, constraintsArray);
         int[] curSolution = new int[variablesArray.length];
+        Arrays.fill(curSolution, -1);
         List<int[]> result = solver.findAllSolutions(n, -1, curSolution);
 
 
