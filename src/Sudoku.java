@@ -13,7 +13,10 @@ public class Sudoku {
         List<Solver.Constraint> constraints = new ArrayList<>();
         // variables
         int[] curSolution = new int[grid.length * grid[0].length];
-        Integer[] domain = new Integer[]{1, 2, 3, 4, 5, 6, 7, 8, 9};
+        Integer[] domain = new Integer[grid.length];
+        for (int i = 0; i < grid.length; i++) {
+            domain[i] = i + 1;
+        }
         for (int i = 0; i < grid.length; i++) {
             for (int j = 0; j < grid[0].length; j++) {
                 if (grid[i][j] == -1) {

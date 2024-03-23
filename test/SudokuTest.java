@@ -17,7 +17,10 @@ class SudokuTest {
         File[] files = folder.listFiles();
 
         assertNotNull(files, "Couldn't find Sudoku files");
-
+//
+//        String path = "size4_level55_puzzle14.txt";
+//        File ffile = new File(path);
+//        files = new File[] {ffile};
         for (File file : files) {
             String filePath = directoryPath + file.getName();
 

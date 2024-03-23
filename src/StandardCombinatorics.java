@@ -146,7 +146,7 @@ public class StandardCombinatorics {
         for (int i = 0; i < result.size(); i++) {
             ArrayList<Integer> cur = new ArrayList<>();
             for (int j = 0; j < result.get(i).length; j++) {
-                if (result.get(j)[j] != 0) cur.add(j+1);
+                if (result.get(i)[j] != 0) cur.add(j+1);
             }
             int[] arr = new int[cur.size()];
             for (int j = 0; j < cur.size(); j++) {

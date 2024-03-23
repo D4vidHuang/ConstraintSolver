@@ -130,6 +130,7 @@ class Solver {
 //                if (occ.contains(i)) continue;
                 newDomain.add(i);
             }
+
             var.domain = newDomain;
         }
     }
@@ -151,13 +152,6 @@ class Solver {
             // Remove the occurred element from the domain
 
             var.domain.removeAll(occ);
-//            ArrayList<Integer> newDomain = new ArrayList<>();
-//            for (int i = 1; i <= n; i++) {
-//                if (occ.contains(i)) continue;
-//                newDomain.add(i);
-//            }
-//
-//            var.domain = newDomain;
         }
     }
 
@@ -193,39 +187,9 @@ class Solver {
                 }
             }
             var.domain.removeAll(occ);
-//            ArrayList<Integer> newDomain = new ArrayList<>();
-//            for (int i = 1; i <= n; i++) {
-//                if (occ.contains(i)) continue;
-//                newDomain.add(i);
-//            }
-//
-//            var.domain = newDomain;
         }
     }
 
-    // Example implementation of the Constraint interface.
-    // It enforces that for given variable X, it holds that 5 < X < 10.
-    //
-    // This particular constraint will most likely not be very useful to you...
-    // Remove it and design a few constraints that *can* help you!
-    static abstract class BetweenFiveAndTenConstraint {
-        Variable var;
-
-        public BetweenFiveAndTenConstraint(Variable var) {
-            this.var = var;
-        }
-
-        void infer() {
-            List<Integer> newDomain = new LinkedList<>();
-
-            for (Integer x : this.var.domain) {
-                if (5 < x && x < 10)
-                    newDomain.add(x);
-            }
-
-            this.var.domain = newDomain;
-        }
-    }
 
     Variable[] variables;
     Constraint[] constraints;
@@ -280,8 +244,6 @@ class Solver {
         if (!solutions.isEmpty() && !findAllSolutions) return;
         if (index == variables.length) {
             solutions.add(currentSolution.clone());
-//            if (!findAllSolutions) return;
-//            solutions.add(currentSolution);
         } else {
             // If the current cell has no pre-assigned value
             if (currentSolution[index] == -1) {
