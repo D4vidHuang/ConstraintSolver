@@ -44,10 +44,22 @@ public class Sudoku {
 
         // Because the sudoku has non-fixed size, pass the size of the grid as the first argument
         int[] result = solver.findOneSolution(grid.length,-1, curSolution);
-
+        StringBuilder sb = new StringBuilder();
+        if (result == null) {
+            return null;
+        }
         for (int i = 0; i < result.length; i++) {
             grid[i / grid.length][i % grid.length] = result[i];
         }
+        sb.append("\nSolved Sudoku:\n");
+        for (int i = 0; i < grid.length; i++) {
+            for (int j = 0; j < grid[0].length; j++) {
+                sb.append(grid[i][j]);
+                sb.append(" ");
+            }
+            sb.append("\n");
+        }
+        System.out.println(sb);
         return grid;
     }
 }

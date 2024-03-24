@@ -1,4 +1,3 @@
-import java.sql.SQLOutput;
 import java.util.*;
 
 class Solver {
@@ -19,7 +18,7 @@ class Solver {
         /**
          * Tries to reduce the domain of the variables associated to this constraint, using inference
          */
-        abstract void infer(int[] currentSolution, int index, int n, Variable var);
+        abstract void infer(int[] currentSolution, int index, int n, Variable[] variables);
     }
 
     static class NQueenConstraint extends Constraint{
@@ -28,7 +27,7 @@ class Solver {
         // Constraint qi = qj only if i != j to ensure no 2 queen are at same row
         // Constraint |i - j| != |qi - qj| to ensure no 2 queen on same diagonal
         @Override
-        void infer(int[] currentSolution, int index, int n, Variable var) {
+        void infer(int[] currentSolution, int index, int n,  Variable[] variables) {
             HashSet<Integer> occ = new HashSet<>();
 
             for (int i = 0; i < index; i++) {
@@ -48,7 +47,7 @@ class Solver {
                 if (occ.contains(i)) continue;
                 newDomain.add(i);
             }
-
+            Variable var = variables[index];
             var.domain = newDomain;
         }
     }
@@ -64,7 +63,7 @@ class Solver {
     static class WithOutRepConstraint extends Constraint {
 
         @Override
-        void infer(int[] currentSolution, int index, int n, Variable var) {
+        void infer(int[] currentSolution, int index, int n, Variable[] variables) {
             HashSet<Integer> occ = new HashSet<>();
             int max = -1;
             for (int i = 0; i < index; i++) {
@@ -76,6 +75,7 @@ class Solver {
                 if (occ.contains(i) || i <= max) continue;
                 newDomain.add(i);
             }
+            Variable var = variables[index];
             var.domain = newDomain;
         }
     }
@@ -83,7 +83,7 @@ class Solver {
     static class WithRepConstraint extends Constraint {
 
         @Override
-        void infer(int[] currentSolution, int index, int n, Variable var) {
+        void infer(int[] currentSolution, int index, int n, Variable[] variables) {
             int max = -1;
             for (int i = 0; i < index; i++) {
                 if (currentSolution[i] > max) max = currentSolution[i];
@@ -93,6 +93,7 @@ class Solver {
                 if (i < max) continue;
                 newDomain.add(i);
             }
+            Variable var = variables[index];
             var.domain = newDomain;
         }
     }
@@ -100,7 +101,7 @@ class Solver {
     static class PermutationConstraint extends Constraint {
 
         @Override
-        void infer(int[] currentSolution, int index, int n, Variable var) {
+        void infer(int[] currentSolution, int index, int n, Variable[] variables) {
             HashSet<Integer> occ = new HashSet<>();
             for (int i = 0; i < index; i++) {
                occ.add(currentSolution[i]);
@@ -110,14 +111,15 @@ class Solver {
                 if (occ.contains(i)) continue;
                 newDomain.add(i);
             }
+            Variable var = variables[index];
             var.domain = newDomain;
         }
     }
 
     static class RowConstraint extends Constraint {
         @Override
-        void infer(int[] currentSolution, int index, int n, Variable var) {
-//            HashSet<Integer> occ = new HashSet<>();
+        void infer(int[] currentSolution, int index, int n, Variable[] variables) {
+            HashSet<Integer> occ = new HashSet<>();
             int[] cnt = new int[n+1];
             int rowStartIndex = index / n * n;
             for (int i = 0; i < n; i++) {
@@ -130,19 +132,36 @@ class Solver {
 //                if (occ.contains(i)) continue;
                 newDomain.add(i);
             }
-
-            var.domain = newDomain;
+            // Update the domain to the entire row
+            for (int i = rowStartIndex; i < n; i++) {
+                if (currentSolution[i] == -1) {
+                    ArrayList<Integer> cur = new ArrayList<>();
+                    for (int j = 0; j < newDomain.size(); j++) {
+                        cur.add(newDomain.get(j));
+                    }
+                    variables[i].domain = cur;
+                }
+            }
+//            var.domain = newDomain;
         }
     }
 
     static class ColumnConstraint extends Constraint {
         @Override
-        void infer(int[] currentSolution, int index, int n, Variable var) {
+        void infer(int[] currentSolution, int index, int n, Variable[] variables) {
             HashSet<Integer> occ = new HashSet<>();
             int columnStartIndex = index % n;
             for (int i = 0; columnStartIndex + i < currentSolution.length; i += n) {
                 int curIndex = columnStartIndex + i;
                 if (currentSolution[curIndex] >= 1) occ.add(currentSolution[curIndex]);
+            }
+            // Update the domain to the entire column
+            for (int i = columnStartIndex; i < currentSolution.length; i += n) {
+                if (currentSolution[i] == -1) {
+                    List<Integer> modifiableDomain = new ArrayList<>(variables[i].domain);
+                    modifiableDomain.removeAll(occ);
+                    variables[i].domain = modifiableDomain;
+                }
             }
 //            ArrayList<Integer> newDomain = new ArrayList<>();
 //            for (Integer i : var.domain) {
@@ -151,13 +170,13 @@ class Solver {
 //            }
             // Remove the occurred element from the domain
 
-            var.domain.removeAll(occ);
+//            var.domain.removeAll(occ);
         }
     }
 
     static class CellConstraint extends Constraint {
         @Override
-        void infer(int[] currentSolution, int index, int n, Variable var) {
+        void infer(int[] currentSolution, int index, int n, Variable[] variables) {
             HashSet<Integer> occ = new HashSet<>();
             int cellSize = (int) Math.sqrt(n);
             // Calculate the column's start index of the cell
@@ -169,16 +188,6 @@ class Solver {
 
             // Calculate the cell's start index
             int cellStartIndex = rowStartIndex * n + cellColumnStartIndex;
-//            if (index == 3) {
-//                System.out.println();
-//                System.out.println("index " + index);
-//                System.out.println("cellSize " + cellSize);
-//                System.out.println("columnStartIndex " + columnStartIndex);
-//                System.out.println("cellColumnStartIndex " + cellColumnStartIndex);
-//                System.out.println("row " + row);
-//                System.out.println("rowStartIndex " + rowStartIndex);
-//                System.out.println("cellStartIndex " + cellStartIndex);
-//            }
             for (int i = 0; i < cellSize; i++) {
                 int curIndex = cellStartIndex + i;
                 for (int j = 0; j < cellSize; j++) {
@@ -186,7 +195,19 @@ class Solver {
                     occ.add(currentSolution[tmp]);
                 }
             }
-            var.domain.removeAll(occ);
+            // Update the domain to the entire cell
+            for (int i = 0; i < cellSize; i++) {
+                int curIndex = cellStartIndex + i;
+                for (int j = 0; j < cellSize; j++) {
+                    int tmp = curIndex + j * n;
+                    if (currentSolution[tmp] == -1) {
+                        List<Integer> modifiableDomain = new ArrayList<>(variables[tmp].domain);
+                        modifiableDomain.removeAll(occ);
+                        variables[tmp].domain = modifiableDomain;
+                    }
+                }
+            }
+//            var.domain.removeAll(occ);
         }
     }
 
@@ -234,29 +255,62 @@ class Solver {
      */
     void solve(boolean findAllSolutions, int n, int k, int[] currentSolution) {
         // here you can do any preprocessing you might want to do before diving into the search
-        search(findAllSolutions, currentSolution, 0, n , k);
+        search(findAllSolutions, currentSolution, 0, n , k, 0, variables);
     }
 
     /**
      * Solves the problem using search and inference.
      */
-    void search(boolean findAllSolutions, int[] currentSolution, int index, int n, int k) {
+    void search(boolean findAllSolutions, int[] currentSolution, int index, int n, int k, int steps, Variable[] variables) {
         if (!solutions.isEmpty() && !findAllSolutions) return;
-        if (index == variables.length) {
+        if (steps == variables.length) {
+            System.out.println();
+            System.out.println("Solution found  STEPS");
+            System.out.println("Steps: " + steps);
+            System.out.println("Variables length: " + variables.length);
             solutions.add(currentSolution.clone());
-        } else {
-            // If the current cell has no pre-assigned value
-            if (currentSolution[index] == -1) {
-                // Reduce the domain
-                for (Constraint c : constraints) {
-                    c.infer(currentSolution, index, n, variables[index]);
-                    if (variables[index].domain.isEmpty()) return;
-                }
+        }
+//        else {
+//            // If the current cell has no pre-assigned value
+//            System.out.println("Index: " + index);
+//            System.out.println("Steps: " + steps);
+////            System.out.println("Current index value: " + currentSolution[index]);
+////            if (currentSolution[index] == -1) {
+////                // Reduce the domain
+////                for (Constraint c : constraints) {
+////                    c.infer(currentSolution, index, n, variables);
+////                    if (variables[index].domain.isEmpty()) {
+////                        System.out.println("Infeasible solution");
+////                        return;
+////                    }
+////                }
+//            }
+        for (Integer cur : variables[index].domain) {
+            currentSolution[index] = cur;
+            for (Constraint c : constraints) {
+                c.infer(currentSolution, index, n, variables);
             }
-            for (Integer cur : variables[index].domain) {
-                currentSolution[index] = cur;
-                search(findAllSolutions, currentSolution.clone(), index + 1, n, k);
+            // Select the variable that has the least domain size
+            int nextIndex = getMinDomainIndex(currentSolution, variables);
+            if (nextIndex == -1) {
+                System.out.println();
+                System.out.println("Solution found -1");
+                solutions.add(currentSolution.clone());
+                return;
+            }
+            search(findAllSolutions, currentSolution.clone(), nextIndex, n, k, steps + 1, variables.clone());
+        }
+    }
+
+    int getMinDomainIndex(int[] currentSolution, Variable[] variables) {
+        int minDomainIndex = -1;
+        int minDomainSize = Integer.MAX_VALUE;
+        for (int i = 0; i < variables.length; i++) {
+            if (currentSolution[i] == -1 && variables[i].domain.size() <= minDomainSize) {
+                minDomainSize = variables[i].domain.size();
+                minDomainIndex = i;
             }
         }
+        return minDomainIndex;
     }
 }

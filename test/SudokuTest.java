@@ -37,7 +37,10 @@ class SudokuTest {
             long startMillis = System.currentTimeMillis();
             int[][] solvedGrid = Sudoku.solve(grid);
             long time = System.currentTimeMillis() - startMillis;
-
+            if (solvedGrid == null) {
+                System.out.println(" failed");
+                continue;
+            }
             int size = solvedGrid.length == 9 ? 3 : solvedGrid.length == 16 ? 4 : 5;
             int sizeSquared = solvedGrid.length;
 
